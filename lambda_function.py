@@ -6,8 +6,6 @@ import json
 import requests
 import os
 
-access_token = os.environ.get("ACCESS_TOKEN")
-access_token_secret = os.environ.get("ACCESS_TOKEN_SECRET")
 consumer_key = os.environ.get("CONSUMER_KEY")
 consumer_secret = os.environ.get("CONSUMER_SECRET")
 weather_api_key = os.environ.get("WEATHER_API_KEY")
@@ -74,14 +72,10 @@ def send_tweet(message):
         json=payload,
     )
 
-    if response.status_code != 201:
-        raise Exception(
-            "Request returned an error: {} {}".format(response.status_code, response.text)
-        )
-
     json_response = response.json()
     print("Response code: {}".format(response.status_code))
     print(json.dumps(json_response, indent=4, sort_keys=True))
+    return response.status_code, json_response["title"]
 
 def get_weather(dateForWeather, latitudeToronto, longitudeToronto):
     response = requests.get(f"https://api.openweathermap.org/data/3.0/onecall/day_summary?lat={latitudeToronto}&lon={longitudeToronto}&date={dateForWeather}&appid={weather_api_key}&units=metric")
@@ -175,13 +169,21 @@ def main():
     introString = getIntroString()
     message = introString + " Here is your forecast for " + dateNextYearForTwitter + ":\n\n" + weatherString
     
-    send_tweet(message)
+    response_status, response_message = send_tweet(message)
+    return response_status, response_message
 
 def lambda_handler(event, context):
-    main()
-    return {
-        'statusCode': 200,
+    response_status, response_message = main()
+
+    if response_status == 201:
+        return {
+        'statusCode': 201,
         'body': 'Success!'
+    }
+    else:
+        return {
+        'statusCode': response_status,
+        'body': response_message
     }
 
 main()
