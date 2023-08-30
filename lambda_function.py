@@ -25,7 +25,7 @@ def create_oauth_session():
 
     resource_owner_key = fetch_response.get("oauth_token")
     resource_owner_secret = fetch_response.get("oauth_token_secret")
-    return resource_owner_key, resource_owner_secret
+    return resource_owner_key, resource_owner_secret, oauth
 
 def fetch_and_save_tokens(oauth, resource_owner_key, resource_owner_secret):
     base_authorization_url = "https://api.twitter.com/oauth/authorize"
@@ -50,7 +50,7 @@ def fetch_and_save_tokens(oauth, resource_owner_key, resource_owner_secret):
 
 def send_tweet(message):
     payload = {"text": message}
-    resource_owner_key, resource_owner_secret = create_oauth_session()
+    resource_owner_key, resource_owner_secret, oauth = create_oauth_session()
 
     # Keep this try/except block uncommented only if running locally. If running in Lambda, you need to pass in the access tokens and secrets directly.
     try:
@@ -61,8 +61,6 @@ def send_tweet(message):
     except FileNotFoundError:
         access_token, access_token_secret = fetch_and_save_tokens(oauth, resource_owner_key, resource_owner_secret)
 
-    print("access", access_token)
-    print("secret access", access_token_secret)
     oauth = OAuth1Session(
     consumer_key,
     client_secret=consumer_secret,
