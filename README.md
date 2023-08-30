@@ -8,7 +8,7 @@ Every day, this script tweets the expected weather for Toronto for a date that's
 
 *Image coming soon*
 
-This Python project first pings the [Open Weather Maps](https://en.wikipedia.org/wiki/OpenWeatherMap) API for the weather forecasts for a date one year in the future. Is this data reliable? Well, I'm not sure! Might need to come back in a year to see how these predictions held up 👀
+This Python project first pings the [Open Weather Maps](https://en.wikipedia.org/wiki/OpenWeatherMap) API for the weather forecast for a date one year in the future. Is this data reliable? Well, I'm not sure! Might need to come back in a year to see how these predictions hold up 👀
 
 It then processes the response and creates a string describing the weather for that specific date.
 
