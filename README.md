@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-This script is scheduled to run everyday and posts the expected weather for Toronto for a date *one year in the future* to Twitter. Check it out in action [@futureweatherTO](https://twitter.com/futureweatherTO)!
+This script is scheduled to run every day and posts the expected weather for Toronto for a date *one year in the future* to Twitter. Check it out in action [@futureweatherTO](https://twitter.com/futureweatherTO)!
 
 ## How It Works
 
