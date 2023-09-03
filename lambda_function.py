@@ -5,10 +5,15 @@ from dateutil.relativedelta import relativedelta
 import json
 import requests
 import os
+import boto3
 
 consumer_key = os.environ.get("CONSUMER_KEY")
 consumer_secret = os.environ.get("CONSUMER_SECRET")
 weather_api_key = os.environ.get("WEATHER_API_KEY")
+s3_bucket_name = os.environ.get("S3_BUCKET_NAME")
+
+s3 = boto3.client('s3')
+flag_file_name = 'tweet_posted_flag.txt'
 
 def create_oauth_session():
     request_token_url = "https://api.twitter.com/oauth/request_token?oauth_callback=oob&x_auth_access_type=write"
@@ -75,7 +80,7 @@ def send_tweet(message):
     json_response = response.json()
     print("Response code: {}".format(response.status_code))
     print(json.dumps(json_response, indent=4, sort_keys=True))
-    return response.status_code, json_response["title"]
+    return response.status_code
 
 def get_weather(dateForWeather, latitudeToronto, longitudeToronto):
     response = requests.get(f"https://api.openweathermap.org/data/3.0/onecall/day_summary?lat={latitudeToronto}&lon={longitudeToronto}&date={dateForWeather}&appid={weather_api_key}&units=metric")
@@ -169,21 +174,37 @@ def main():
     introString = getIntroString()
     message = introString + " Here is your forecast for " + dateNextYearForTwitter + ":\n\n" + weatherString
     
-    response_status, response_message = send_tweet(message)
-    return response_status, response_message
+    response_status = send_tweet(message)
+    return response_status
+
+def get_date_from_s3():
+    try:
+        obj = s3.get_object(Bucket=s3_bucket_name, Key=flag_file_name)
+        last_date = obj['Body'].read().decode('utf-8').strip()
+        return last_date
+    except Exception as e:
+        return None
+
+def set_date_in_s3(current_date):
+    s3.put_object(Body=current_date, Bucket=s3_bucket_name, Key=flag_file_name)
 
 def lambda_handler(event, context):
-    response_status, response_message = main()
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
+    last_date = get_date_from_s3()
+    response_status = 201
+    if last_date != today:
+        set_date_in_s3(today)
+        response_status = main()
 
-    if response_status == 201:
-        return {
-        'statusCode': 201,
-        'body': 'Success!'
-    }
-    else:
+    if response_status != 201:
         return {
         'statusCode': response_status,
-        'body': response_message
+        'body': "Something went wrong!"
+    }
+     
+    return {
+        'statusCode': 201,
+        'body': 'Success!'
     }
 
 main()
