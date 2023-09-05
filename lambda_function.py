@@ -206,5 +206,3 @@ def lambda_handler(event, context):
         'statusCode': 201,
         'body': 'Success!'
     }
-
-main()
